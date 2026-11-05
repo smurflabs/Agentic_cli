@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AgenticCli</RootNamespace>
+    <AssemblyName>agentic</AssemblyName>
+    <Version>2.3.26</Version>
+    <Product>Agentic CLI</Product>
+    <!-- The same icon as the desktop app (Agentic_desktop\www\desktop\favicon.ico). -->
+    <ApplicationIcon>agentic.ico</ApplicationIcon>
+    <VBToolsVersion>latest</VBToolsVersion>
+    <OptionStrict>On</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionInfer>On</OptionInfer>
+    <OptionCompare>Binary</OptionCompare>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Nullable>disable</Nullable>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);VBNET9000;CA1416</NoWarn>
+    <!-- The CLI's sources live in src\. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <!-- dotnet publish makes one self-contained agentic.exe (no .dll or .pdb beside it): the auto-updater swaps that one file.
+       dotnet publish -r linux-x64 makes the Linux build (agentic). -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src\**\*.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.1" />
+  </ItemGroup>
+
+</Project>
+
