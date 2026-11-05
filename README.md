@@ -7,7 +7,7 @@
 [![Release](https://github.com/smurflabs/Agentic_cli/actions/workflows/release.yml/badge.svg)](https://github.com/smurflabs/Agentic_cli/releases)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
-![Runs on Windows and Linux](https://img.shields.io/badge/runs%20on-Windows%20%7C%20Linux-lightgrey)
+![Runs on Windows, Linux and macOS](https://img.shields.io/badge/runs%20on-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 
 [Install](#install) · [Features](#features) · [Setup guide](SETUP.md) · [Reference manual](docs/REFERENCE.md) · [Agentic server](https://github.com/smurflabs/Agentic)
 
@@ -89,6 +89,9 @@ Download the build for your system from [Releases](https://github.com/smurflabs/
 |---|---|
 | `agentic.exe` | Windows x64: one self-contained file |
 | `agentic-cli-<version>-linux-x64.tar.gz` | Linux x64: `agentic` |
+| `agentic-cli-<version>-linux-arm64.tar.gz` | Linux ARM64 (Raspberry Pi 4/5, Graviton â€¦): `agentic` |
+| `agentic-cli-<version>-osx-arm64.tar.gz` | macOS on Apple silicon (M1 and later): `agentic` |
+| `agentic-cli-<version>-osx-x64.tar.gz` | macOS on Intel: `agentic` |
 
 Put `agentic.exe` (or the extracted `agentic`) in a folder of its own that only you can read, then add that folder to your `PATH`.
 

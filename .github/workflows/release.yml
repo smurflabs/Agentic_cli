@@ -1,24 +1,43 @@
-# Publishes a GitHub release when a version tag (v2.3.26, ...) is pushed: agentic.exe for Windows (one self-contained
-# file, built on Windows so it keeps its icon and version resource) and agentic for Linux (in a tar.gz, which keeps it
-# executable), with SHA-256 sums. The notes are the annotated tag's message.
+# Publishes the CLI on GitHub for every platform the Agentic server offers:
+#   agentic.exe                                 Windows x64, one self-contained file
+#   agentic-cli-<version>-<platform>.tar.gz     linux-x64, linux-arm64, osx-x64, osx-arm64 (tar keeps the file executable)
+#   SHA256SUMS.txt
+# Windows builds run on Windows (icon and version resource) and macOS builds on macOS (the ad-hoc signature Apple
+# Silicon needs). A pushed v* tag creates the release with the annotated tag's message as notes; running the workflow by
+# hand with a tag rebuilds and replaces the files of that existing release.
 name: Release
 
 on:
   push:
     tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag whose files to rebuild (e.g. v2.3.26)'
+        required: true
 
 permissions:
   contents: write
 
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - rid: win-x64
             os: windows-latest
           - rid: linux-x64
             os: ubuntu-latest
+          - rid: linux-arm64
+            os: ubuntu-latest
+          - rid: osx-x64
+            os: macos-latest
+          - rid: osx-arm64
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +47,7 @@ jobs:
         shell: bash
         run: |
           project=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' AgenticCli.vbproj | head -n 1)
-          if [ "$project" != "${GITHUB_REF_NAME#v}" ]; then echo "Tag $GITHUB_REF_NAME does not match <Version> $project"; exit 1; fi
+          if [ "$project" != "${TAG#v}" ]; then echo "Tag $TAG does not match <Version> $project"; exit 1; fi
           echo "version=$project" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-dotnet@v4
@@ -47,13 +66,15 @@ jobs:
           Copy-Item out/agentic.exe dist/agentic.exe
           (Get-Item dist/agentic.exe).VersionInfo | Format-List ProductName, ProductVersion, FileVersion
 
-      - name: Package (Linux)
-        if: runner.os == 'Linux'
+      - name: Package (Linux, macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           cp LICENSE README.md out/
           chmod +x out/agentic
+          file out/agentic || true
           mkdir -p dist
-          tar -C out -czf "dist/agentic-cli-${{ steps.version.outputs.version }}-linux-x64.tar.gz" agentic LICENSE README.md
+          tar -C out -czf "dist/agentic-cli-${{ steps.version.outputs.version }}-${{ matrix.rid }}.tar.gz" agentic LICENSE README.md
 
       - uses: actions/upload-artifact@v4
         with:
@@ -79,4 +100,8 @@ jobs:
         run: |
           git fetch --force --tags
           cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt && cd ..
-          gh release create "$GITHUB_REF_NAME" dist/* --title "Agentic CLI ${GITHUB_REF_NAME#v}" --notes-from-tag --verify-tag
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --title "Agentic CLI ${TAG#v}" --notes-from-tag --verify-tag
+          fi
