@@ -1,6 +1,6 @@
 # Setting up the Agentic CLI
 
-The CLI is a coding agent in your terminal. The models run on your Agentic server (the **Agentic** repository). The tools run on your computer: files, search, shell commands, web pages, subagents, skills and MCP servers. [README.md](README.md) covers sessions, commands, permissions, hooks and MCP in depth.
+The CLI is a coding agent in your terminal. The models run on your Agentic server (the **Agentic** repository). The tools run on your computer: files, search, shell commands, web pages, subagents, skills and MCP servers. The [reference manual](docs/REFERENCE.md) covers sessions, commands, permissions, hooks and MCP in depth.
 
 ## 1. What you need
 
@@ -79,7 +79,7 @@ agentic -c                        continue the last conversation in this folder
 agentic -p "explain src/app.vb"   answer once and exit (scripts, pipes, CI)
 ```
 
-Type `/help` in a session to list the commands. The CLI asks before it edits files or runs commands. [README.md](README.md#permissions) explains how to change that.
+Type `/help` in a session to list the commands. The CLI asks before it edits files or runs commands. [The reference manual](docs/REFERENCE.md#permissions) explains how to change that.
 
 ## 5. Where things are
 

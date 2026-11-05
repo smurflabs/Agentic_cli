@@ -1,0 +1,79 @@
+# Publishes a GitHub release when a version tag (v2.3.26, ...) is pushed: agentic.exe for Windows (built on Windows, so
+# it keeps its icon and version resource) and agentic for Linux, with SHA-256 sums. The notes are the annotated tag's message.
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the version
+        id: version
+        shell: bash
+        run: |
+          project=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' AgenticCli.vbproj | head -n 1)
+          if [ "$project" != "${GITHUB_REF_NAME#v}" ]; then echo "Tag $GITHUB_REF_NAME does not match <Version> $project"; exit 1; fi
+          echo "version=$project" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        shell: bash
+        run: dotnet publish AgenticCli.vbproj -c Release -r ${{ matrix.rid }} -o out -nologo
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Copy-Item LICENSE, README.md out/
+          Compress-Archive -Path out/agentic.exe, out/LICENSE, out/README.md -DestinationPath "agentic-cli-${{ steps.version.outputs.version }}-win-x64.zip"
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cp LICENSE README.md out/
+          chmod +x out/agentic
+          tar -C out -czf "agentic-cli-${{ steps.version.outputs.version }}-linux-x64.tar.gz" agentic LICENSE README.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.rid }}
+          path: agentic-cli-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --force --tags
+          cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt && cd ..
+          gh release create "$GITHUB_REF_NAME" dist/* --title "Agentic CLI ${GITHUB_REF_NAME#v}" --notes-from-tag --verify-tag
