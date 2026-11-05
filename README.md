@@ -87,10 +87,10 @@ Download the build for your system from [Releases](https://github.com/smurflabs/
 
 | File | System |
 |---|---|
-| `agentic-cli-<version>-win-x64.zip` | Windows x64: `agentic.exe` |
+| `agentic.exe` | Windows x64: one self-contained file |
 | `agentic-cli-<version>-linux-x64.tar.gz` | Linux x64: `agentic` |
 
-Extract it into a folder of its own that only you can read, then add that folder to your `PATH`.
+Put `agentic.exe` (or the extracted `agentic`) in a folder of its own that only you can read, then add that folder to your `PATH`.
 
 ### From your Agentic server
 

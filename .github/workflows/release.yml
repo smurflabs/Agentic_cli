@@ -1,5 +1,6 @@
-# Publishes a GitHub release when a version tag (v2.3.26, ...) is pushed: agentic.exe for Windows (built on Windows, so
-# it keeps its icon and version resource) and agentic for Linux, with SHA-256 sums. The notes are the annotated tag's message.
+# Publishes a GitHub release when a version tag (v2.3.26, ...) is pushed: agentic.exe for Windows (one self-contained
+# file, built on Windows so it keeps its icon and version resource) and agentic for Linux (in a tar.gz, which keeps it
+# executable), with SHA-256 sums. The notes are the annotated tag's message.
 name: Release
 
 on:
@@ -42,20 +43,22 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Copy-Item LICENSE, README.md out/
-          Compress-Archive -Path out/agentic.exe, out/LICENSE, out/README.md -DestinationPath "agentic-cli-${{ steps.version.outputs.version }}-win-x64.zip"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item out/agentic.exe dist/agentic.exe
+          (Get-Item dist/agentic.exe).VersionInfo | Format-List ProductName, ProductVersion, FileVersion
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
           cp LICENSE README.md out/
           chmod +x out/agentic
-          tar -C out -czf "agentic-cli-${{ steps.version.outputs.version }}-linux-x64.tar.gz" agentic LICENSE README.md
+          mkdir -p dist
+          tar -C out -czf "dist/agentic-cli-${{ steps.version.outputs.version }}-linux-x64.tar.gz" agentic LICENSE README.md
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.rid }}
-          path: agentic-cli-*
+          path: dist/*
 
   release:
     needs: build
