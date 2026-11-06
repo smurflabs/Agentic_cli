@@ -9,7 +9,7 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
 ![Runs on Windows, Linux and macOS](https://img.shields.io/badge/runs%20on-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 
-[Install](#install) · [Screenshots](#screenshots) · [Features](#features) · [Setup guide](SETUP.md) · [Reference manual](docs/REFERENCE.md) · [Agentic server](https://github.com/smurflabs/Agentic)
+[Install](#install) · [Screenshots](#screenshots) · [Features](#features) · [MCP servers](#mcp-servers) · [Setup guide](SETUP.md) · [Reference manual](docs/REFERENCE.md) · [Agentic server](https://github.com/smurflabs/Agentic)
 
 </div>
 
@@ -93,6 +93,67 @@ agentic -p "explain src/app.vb"  answer once and exit (scripts, pipes, CI)
 - **Print mode** (`-p`) with text, JSON or streaming JSON output for scripts and CI.
 - **`--input-format stream-json`** to drive the CLI from your own programs over stdin and stdout.
 - **Self-updating:** the CLI updates itself from your Agentic server.
+
+## MCP servers
+
+The CLI is a full [MCP](https://modelcontextprotocol.io) client. It gets tools from three places.
+
+### Ready without any setup
+
+- **Your Agentic server's MCP servers.** These are the server's [16 built-in tool servers](https://github.com/smurflabs/Agentic#built-in-tool-servers) (storage, git, documents, database, data, files, code review, network checks, utilities and more), plus the servers you or your administrator added under **My MCP servers** in the web app. Switch them on in `/mcp`. They run on the server, and you can use only the ones your account may use.
+- **Your Claude Code setup.** Your Claude Code servers (`~\.claude.json`, for you and for this project), your Claude Code plugins' servers and Claude Desktop's servers are read live, with nothing to import. `includeClaudeConfig: false` turns this off.
+- **The CLI as an MCP server.** `agentic mcp serve` offers the CLI's own tools (Read, Edit, Bash …) to other MCP apps.
+
+### The catalog: well-known servers by name
+
+`agentic mcp catalog` lists 21 well-known servers, and `agentic mcp add <name> [folder]` adds one. A server that works on files gets the folder you give it. A server that needs an API key reads it from its environment variable, for example `BRAVE_API_KEY`. The same list is in the web app, the desktop app and VS Code.
+
+| Server | What it does | Needs |
+|---|---|---|
+| Filesystem | Read, search and edit files in the folders you allow | Node.js |
+| Git | Read a Git repository: status, diffs, log, branches and commits | uv (Python) |
+| GitHub | GitHub's official server: repositories, issues, pull requests, code search and Actions (hosted) | A GitHub token |
+| Desktop Commander | Terminal commands, processes and file editing on the computer it runs on | Node.js |
+| Playwright browser | Microsoft's browser automation: open pages, click, type, fill forms and read pages | Node.js 20+ |
+| Chrome DevTools | Google's server for Chrome: drive the browser, read the console and network, record performance traces | Node.js 20.19+ and Chrome |
+| Fetch | Download a web page and turn it into Markdown | uv (Python) |
+| Firecrawl | Scrape, crawl and extract structured data from websites, including JavaScript-heavy ones | Node.js 22+ and a Firecrawl API key |
+| Brave Search | Web, news, image and local search through Brave's own index | Node.js and a Brave Search API key |
+| Tavily | Search built for AI agents, with page extraction and site crawling | Node.js and a Tavily API key |
+| Exa | Neural web search: pages by meaning, research papers, companies and code | Node.js 20+ and an Exa API key |
+| Context7 | Current documentation and code examples for thousands of libraries | Node.js 20+ |
+| Microsoft Learn | Search and read Microsoft's documentation: .NET, Azure, Windows, Microsoft 365 (hosted) | Nothing |
+| DeepWiki | Ask questions about any public GitHub repository and read its generated wiki (hosted) | Nothing |
+| AWS Documentation | Search and read AWS documentation | uv (Python) |
+| Notion | Search, read and update pages and databases in your Notion workspace | Node.js and a Notion integration token |
+| Supabase | Query and manage Supabase projects: tables, SQL, migrations and logs (read-only by default) | Node.js and a Supabase access token |
+| Memory | A knowledge graph the model stores facts in and recalls across sessions | Node.js |
+| Sequential Thinking | Structured step-by-step reasoning that the model can revise and branch | Node.js |
+| Time | The current time in any time zone, and conversions | uv (Python) |
+| REA | Reverse engineering of native binaries, .NET assemblies, JS/Electron apps, Android APKs and websites | Node.js 22+; optionally Ghidra, Hopper or IDA |
+
+### Add your own
+
+```text
+agentic mcp add files -- npx -y @modelcontextprotocol/server-filesystem C:\work
+agentic mcp add --transport http github https://api.githubcopilot.com/mcp/ -H "Authorization: Bearer …"
+agentic mcp add-json db '{"command":"uvx","args":["mcp-server-sqlite","--db-path","app.db"]}'
+agentic mcp list | get | remove | enable | disable | test <name>
+agentic mcp import          copy servers from Claude Code, Claude Desktop or the Agentic desktop app
+agentic mcp login <name>    sign in to a hosted server (OAuth in the browser); logout forgets it
+```
+
+- **Where servers are kept:**
+  - `~\.agentic\mcp.json` for you.
+  - `.mcp.json` in the project, with `-s project`. Each project server is approved once per person, so a cloned repository can't start programs by itself.
+  - `--mcp-config <file>` for one run.
+- **Transports:** stdio (including `npx` and `uvx`), Streamable HTTP and SSE.
+- **Variables:** values can use `${VAR}`, `${VAR:-default}` or `%VAR%`, and `envFile` loads a `.env` file.
+- **Sign-in:** OAuth tokens are kept encrypted for your account.
+- **In a session:** `/mcp` shows every server's status and tools. `/mcp disable <name>` switches one off without changing its file.
+- **What the model gets:** each server's tools (as `mcp__server__tool`), its pictures (such as a browser's screenshots), its resources, and its prompts (as `/mcp__server__prompt` commands).
+
+Every setting is in the [reference manual](docs/REFERENCE.md#mcp-servers).
 
 ## Install
 
