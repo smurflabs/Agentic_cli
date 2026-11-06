@@ -9,7 +9,7 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
 ![Runs on Windows, Linux and macOS](https://img.shields.io/badge/runs%20on-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 
-[Install](#install) · [Features](#features) · [Setup guide](SETUP.md) · [Reference manual](docs/REFERENCE.md) · [Agentic server](https://github.com/smurflabs/Agentic)
+[Install](#install) · [Screenshots](#screenshots) · [Features](#features) · [Setup guide](SETUP.md) · [Reference manual](docs/REFERENCE.md) · [Agentic server](https://github.com/smurflabs/Agentic)
 
 </div>
 
@@ -32,6 +32,21 @@ agentic "fix the failing tests"  start with a first message
 agentic -c                       continue the last conversation in this folder
 agentic -p "explain src/app.vb"  answer once and exit (scripts, pipes, CI)
 ```
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/cli-session.png" alt="Agentic CLI session: a streamed answer with folded thinking and a status footer"><br>
+      <sub><b>A session</b>: answers stream with Markdown. Thinking is folded, and the footer shows the model, speed and context use.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/cli-commands.png" alt="Agentic CLI command menu after typing a slash"><br>
+      <sub><b>Commands</b>: type <code>/</code> for every command with its description. Tab or Enter completes.</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
